@@ -17,9 +17,23 @@ $BOOTMODE || DIR=$(dirname "$ZIPFILE");
 [ "$AKHOME" ] || export AKHOME=$POSTINSTALL/tmp/anykernel;
 [ "$ANDROID_ROOT" ] || ANDROID_ROOT=/system;
 
+#ui_print() {
+#  until [ ! "$1" ]; do
+#    echo "ui_print $1
+#      ui_print" >> /proc/self/fd/$OUTFD;
+#    shift;
+#  done;
+#}
+# Modified ui_print()
 ui_print() {
+  color_reset="\033[0m"
+  color_blue="\033[96m"
+  color_green="\033[92m"
+  color_yellow="\033[93m"
+  color_red="\033[91m"
+
   until [ ! "$1" ]; do
-    echo "ui_print $1
+    echo -e "ui_print $1
       ui_print" >> /proc/self/fd/$OUTFD;
     shift;
   done;
@@ -539,6 +553,8 @@ fi;
 OLD_PATH="$PATH";
 export PATH="$AKHOME/tools:$AKHOME/bin:$PATH";
 
+ui_print "";
+
 if [ -f banner ]; then
   ui_printfile banner;
   ui_print " " " ";
@@ -551,9 +567,36 @@ if [ -f version ]; then
   ui_printfile version;
   ui_print " ";
 fi;
-ui_print " " "AnyKernel3 by osm0sis @ xda-developers" " ";
+
+ui_print " " "${color_blue}AnyKernel3 by osm0sis @ xda-developers${color_reset}" " ";
 grep -oE 'AK_BASE.*' META-INF/com/google/android/updater-script >&2;
 ui_print " ";
+
+ui_print "===========================================";
+ui_print "${color_red}=       _  __                      _        =${color_reset}";
+ui_print "${color_red}=      | |/ /_ __ __ _ _ __  _   _| |       =${color_reset}";
+ui_print "${color_red}=      |   /|  __/ _  |  _ \| | | | |       =${color_reset}";
+ui_print "${color_red}=      | . \| | | (_| | | | | |_| | |       =${color_reset}";
+ui_print "${color_red}=      |_|\_\_|  \__,_|_| |_|\__,_|_|       =${color_reset}";
+ui_print "=============================================";
+ui_print "${color_blue}        ___                           __    ${color_reset}";
+ui_print "${color_blue}       / (_)__  ___ ___ ____ ____ ___/ /    ${color_reset}";
+ui_print "${color_blue}      / / / _ \/ -_) _ '/ _ '/ -_) _  /     ${color_reset}";
+ui_print "${color_blue}     /_/_/_//_/\__/\_,_/\_, /\__/\_,_/      ${color_reset}";
+ui_print "${color_blue}                       /___/                ${color_reset}";
+ui_print "=============================================";
+ui_print "${color_green}=   Kernel version  : 4.9                   =${color_reset}";
+ui_print "${color_green}=   Device          : Redmi 5 (rosy)        =${color_reset}";
+ui_print "${color_green}=   Maintainer      : Naupal                =${color_reset}";
+ui_print "=============================================";
+
+# Additional features of the kernel
+ui_print " "
+ui_print "${color_yellow}=  Kernel Features:${color_reset}"
+ui_print "${color_yellow}=  - Improved battery life${color_reset}"
+ui_print "${color_yellow}=  - Enhanced performance${color_reset}"
+ui_print "${color_yellow}=  - Customizable kcal settings${color_reset}"
+ui_print "${color_yellow}=  - Misc. improvements${color_reset}"
 
 setup_env;
 
