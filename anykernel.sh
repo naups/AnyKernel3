@@ -4,20 +4,14 @@
 ### AnyKernel setup
 # global properties
 properties() { '
-kernel.string=ExampleKernel by osm0sis @ xda-developers
+kernel.string=Lineaged Kernel Installer
 do.devicecheck=1
 do.modules=0
-do.systemless=1
+do.systemless=0
 do.cleanup=1
-do.cleanuponabort=0
-device.name1=maguro
-device.name2=toro
-device.name3=toroplus
-device.name4=tuna
-device.name5=
-supported.versions=
-supported.patchlevels=
-supported.vendorpatchlevels=
+do.cleanuponabort=1
+device.name1=rosy
+device.name2=Redmi 5
 '; } # end properties
 
 
@@ -29,7 +23,7 @@ set_perm_recursive 0 0 750 750 $RAMDISK/init* $RAMDISK/sbin;
 } # end attributes
 
 # boot shell variables
-BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
+BLOCK=auto;
 IS_SLOT_DEVICE=0;
 RAMDISK_COMPRESSION=auto;
 PATCH_VBMETA_FLAG=auto;
@@ -40,21 +34,30 @@ PATCH_VBMETA_FLAG=auto;
 # boot install
 dump_boot; # use split_boot to skip ramdisk unpack, e.g. for devices with init_boot ramdisk
 
-# init.rc
-backup_file init.rc;
-replace_string init.rc "cpuctl cpu,timer_slack" "mount cgroup none /dev/cpuctl cpu" "mount cgroup none /dev/cpuctl cpu,timer_slack";
+# Clean up other kernels' ramdisk files before installing ramdisk
+rm -rf /vendor/etc/init/hw/init.lineaged.rc
 
-# init.tuna.rc
-backup_file init.tuna.rc;
-insert_line init.tuna.rc "nodiratime barrier=0" after "mount_all /fstab.tuna" "\tmount ext4 /dev/block/platform/omap/omap_hsmmc.0/by-name/userdata /data remount nosuid nodev noatime nodiratime barrier=0";
-append_file init.tuna.rc "bootscript" init.tuna;
+#Lineaged======================================== Credits @NFS-Projects
+cp -rpf $home/ramdisk/init.lineaged.rc /vendor/etc/init/hw/init.lineaged.rc
+chmod 644 /vendor/etc/init/hw/init.lineaged.rc
+#spectrum write
+if [ -e /system/etc/init/hw/init.rc ]; then
+	cp -rpf /system/etc/init/hw/init.rc~ /system/etc/init/hw/init.rc
+		remove_line /system/etc/init/hw/init.rc "import /vendor/etc/init/hw/init.lineaged.rc";
+		backup_file /system/etc/init/hw/init.rc;
+		insert_line /system/etc/init/hw/init.rc "init.lineaged.rc" before "import /init.environ.rc" "import /vendor/etc/init/hw/init.lineaged.rc";
+fi;
 
-# fstab.tuna
-backup_file fstab.tuna;
-patch_fstab fstab.tuna /system ext4 options "noatime,barrier=1" "noatime,nodiratime,barrier=0";
-patch_fstab fstab.tuna /cache ext4 options "barrier=1" "barrier=0,nomblk_io_submit";
-patch_fstab fstab.tuna /data ext4 options "data=ordered" "nomblk_io_submit,data=writeback";
-append_file fstab.tuna "usbdisk" fstab;
+if [ -e /vendor/etc/init/hw/init.qcom.rc ]; then
+	cp -rpf /vendor/etc/init/hw/init.qcom.rc~  /vendor/etc/init/hw/init.qcom.rc
+		remove_line /vendor/etc/init/hw/init.qcom.rc "import /vendor/etc/init/hw/init.lineaged.rc";
+		backup_file /vendor/etc/init/hw/init.qcom.rc;
+		insert_line /vendor/etc/init/hw/init.qcom.rc "init.lineaged.rc" before "import /vendor/etc/init/hw/init.qcom.usb.rc" "import /vendor/etc/init/hw/init.lineaged.rc";
+fi;
+#Lineaged========================================
+
+rm -rf /system/etc/init/hw/init.rc~
+rm -rf /vendor/etc/init/hw/init.qcom.rc~
 
 write_boot; # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 ## end boot install
